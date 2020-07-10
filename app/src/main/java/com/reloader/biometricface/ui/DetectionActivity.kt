@@ -149,8 +149,7 @@ class DetectionActivity : AppCompatActivity() {
                     )
 
                     if (mBitmap != null) {
-                        val imageView = findViewById(R.id.image) as ImageView
-                        imageView.setImageBitmap(mBitmap)
+                        image.setImageBitmap(mBitmap)
                         addLog(
                             "Imagen: " + mImageUri + "resize to " + mBitmap?.width
                                     + "x" + mBitmap?.height
@@ -158,8 +157,7 @@ class DetectionActivity : AppCompatActivity() {
                     }
 
                     val faceListAdapter = FaceListAdapter(null)
-                    val listView = findViewById(R.id.list_detected_faces) as ListView
-                    listView.adapter = faceListAdapter
+                    list_detected_faces.adapter = faceListAdapter
                     setInfo("")
                     setDetectButtonEnableStatus(true)
                 }
@@ -185,16 +183,14 @@ class DetectionActivity : AppCompatActivity() {
                 detectionResult = (result.size.toString() + " face"
                         + (if (result.size != 1) "s" else "") + " detected")
 
-                val imageView = findViewById(R.id.image) as ImageView
-                imageView.setImageBitmap(
+                image.setImageBitmap(
                     ImageHelper.drawFaceRectanglesOnBitmap(
                         mBitmap!!, result, true
                     )
                 )
 
                 val faceListAdapter = FaceListAdapter(result)
-                val listView = findViewById(R.id.list_detected_faces) as ListView
-                listView.adapter = faceListAdapter
+                list_detected_faces.adapter = faceListAdapter
             } else {
                 detectionResult = "0 face detect"
             }
@@ -207,8 +203,7 @@ class DetectionActivity : AppCompatActivity() {
     }
 
     private fun setDetectButtonEnableStatus(isEnabled: Boolean) {
-        val detectButton = findViewById(R.id.detect) as Button
-        detectButton.isEnabled = isEnabled
+        detect.isEnabled = isEnabled
     }
 
     private fun setAllButtonsEnabledStatus(isEnabled: Boolean) {
@@ -295,10 +290,13 @@ class DetectionActivity : AppCompatActivity() {
                 faceThumbnails[position]
             )
 
+            //  Uri.fromFile() will not work on Android 7.0+, with a targetSdkVersion of 24 or higher. Use FileProvider
+            //Uri outputUri=FileProvider.getUriForFile(this, AUTHORITY, output);
+
             val formatter: DecimalFormat = DecimalFormat("#0.0")
 
             val face_description: String = String.format(
-                "Age: %s  Gender: %s\nHair: %s  FacialHair: %s\nMakeup: %s  %s\nForeheadOccluded: %s  Blur: %s\nEyeOccluded: %s  %s\n" + "MouthOccluded: %s  Noise: %s\nGlassesType: %s\nHeadPose: %s\nAccessories: %s",
+                "Edad: %s  Genero: %s\nCabello: %s  Bigote: %s\nMaquillaje: %s  %s\nForeheadOccluded: %s  Blur: %s\nEyeOccluded: %s  %s\n" + "MouthOccluded: %s  Noise: %s\nTipo de lentes: %s\nHeadPose: %s\nAccessorios: %s",
                 faces[position].faceAttributes.age,
                 faces[position].faceAttributes.gender,
                 getHair(faces[position].faceAttributes.hair),

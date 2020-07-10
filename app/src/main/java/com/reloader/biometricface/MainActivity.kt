@@ -1,11 +1,12 @@
 package com.reloader.biometricface
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import com.reloader.biometricface.ui.DetectionActivity
+import com.reloader.biometricface.ui.VerificationMenuActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -14,7 +15,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        if(getString(R.string.subscription_key).startsWith("Please")){
+        if (getString(R.string.subscription_key).startsWith("Please")) {
 
             AlertDialog.Builder(this)
                 .setTitle(R.string.add_subscription_key_tip_title)
@@ -32,33 +33,34 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-   private val clickListener: View.OnClickListener = View.OnClickListener { view ->
+    private val clickListener: View.OnClickListener = View.OnClickListener { view ->
 
-       when (view.id) {
+        when (view.id) {
 
-           R.id.btn_detection->{
+            R.id.btn_detection -> {
 
-               val intent = Intent(this, DetectionActivity::class.java)
-               startActivity(intent)
-           }
+                val intent = Intent(this, DetectionActivity::class.java)
+                startActivity(intent)
+            }
 
-           R.id.btn_verificacion->{
+            R.id.btn_verificacion -> {
+                val intent = Intent(this, VerificationMenuActivity::class.java)
+                startActivity(intent)
+            }
 
-           }
+            R.id.btn_agrupando -> {
 
-           R.id.btn_agrupando->{
+            }
 
-           }
+            R.id.btn_rostrosimilares -> {
 
-           R.id.btn_rostrosimilares->{
+            }
 
-           }
+            R.id.btn_identificacion -> {
 
-           R.id.btn_identificacion->{
-
-           }
-       }
-   }
+            }
+        }
+    }
 }
 
 

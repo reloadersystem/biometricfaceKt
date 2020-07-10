@@ -15,7 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-
+        <activity android:name=".ui.PersonVerificationActivity"></activity>
+        <activity android:name=".ui.FaceVerificationActivity" />
+        <activity android:name=".ui.VerificationMenuActivity" />
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -27,7 +29,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".log.DetectionLogActivity"
             android:label="@string/detection_log"
@@ -37,12 +38,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.DetectionActivity" />
         </activity>
-
         <activity
             android:name=".ui.SelectImageActivity"
             android:label="@string/select_an_image"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".ui.DetectionActivity"
             android:label="@string/detection"
@@ -53,8 +52,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-
-
     </application>
 
 </manifest>
