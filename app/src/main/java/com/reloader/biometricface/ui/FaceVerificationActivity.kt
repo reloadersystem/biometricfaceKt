@@ -230,7 +230,7 @@ class FaceVerificationActivity : AppCompatActivity() {
     private fun initializeFaceList(index: Int) {
 
         val listview =
-            findViewById(if (index == 0) R.id.list_faces_0 else R.id.list_faces_1) as ListView
+            findViewById<ListView>(if (index == 0) R.id.list_faces_0 else R.id.list_faces_1)
 
         listview.onItemClickListener =
             AdapterView.OnItemClickListener { parent, view, position, id ->
@@ -246,9 +246,8 @@ class FaceVerificationActivity : AppCompatActivity() {
                     }
 
                     val imageView =
-                        findViewById(if (index == 0) R.id.image_0 else R.id.image_1) as ImageView
+                        if (index == 0) image_0 else image_1
                     imageView.setImageBitmap(faceListAdapter.faceThumbnails[position])
-
                     setInfo("")
                 }
             }
@@ -292,12 +291,11 @@ class FaceVerificationActivity : AppCompatActivity() {
             if (faceListAdapter.faces.size != 0) {
 
                 if (index == 0) {
-
                     mFaceId0 = faceListAdapter.faces.get(0).faceId
                 } else {
                     mFaceId1 = faceListAdapter.faces.get(0).faceId
                 }
-
+// photo take resultado  ||
                 val imageView =
                     findViewById(if (index == 0) R.id.image_0 else R.id.image_1) as ImageView
                 imageView.setImageBitmap(faceListAdapter.faceThumbnails[0])
@@ -422,13 +420,12 @@ class FaceVerificationActivity : AppCompatActivity() {
                 thumbnailToShow = ImageHelper.highlightSelectedFaceThumbnail(thumbnailToShow)
             }
 
-            (convertView.findViewById(R.id.image_face) as ImageView).setImageBitmap(thumbnailToShow)
+            // convertView.image_face.setImageBitmap(thumbnailToShow)
 
             return convertView
         }
 
     }
-
 
     companion object {
         private val REQUEST_SELECT_IMAGE_0 = 0

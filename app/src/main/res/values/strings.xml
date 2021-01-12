@@ -3,7 +3,7 @@
 
     <!-- Please refer to https://azure.microsoft.com/en-us/services/cognitive-services/face/ to get your subscription key -->
     <!-- If you have subscription key with its corresponding endpoint, you can add them here to use the service -->
-    <string name="subscription_key">0749e272ea74492ea717f774068fd65a</string>
+    <string name="subscription_key">ccda4649f32741818a169e1bfb8b69f7</string>
     <!--    <string name="endpoint">https://westus.api.cognitive.microsoft.com/face/v1.0</string>-->
     <string name="endpoint">https://brazilsouth.api.cognitive.microsoft.com/face/v1.0</string>
 

@@ -2,17 +2,13 @@ package com.reloader.biometricface.ui
 
 import android.app.Activity
 import android.app.ProgressDialog
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.text.TextUtils
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.microsoft.projectoxford.face.FaceServiceClient
 import com.microsoft.projectoxford.face.contract.*
@@ -23,11 +19,7 @@ import com.reloader.biometricface.helper.SampleApp
 import kotlinx.android.synthetic.main.activity_detection.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.io.InputStream
-import java.text.DecimalFormat
-import java.util.*
-import kotlin.collections.ArrayList
 
 
 class DetectionActivity : AppCompatActivity() {
@@ -36,6 +28,10 @@ class DetectionActivity : AppCompatActivity() {
     private var mImageUri: Uri? = null
     private var mBitmap: Bitmap? = null
     lateinit var mProgressDialog: ProgressDialog
+
+    companion object {
+        val REQUEST_SELECT_IMAGE = 0
+    }
 
     private inner class DetectionTask : AsyncTask<InputStream, String, Array<Face>>() {
 
@@ -81,12 +77,12 @@ class DetectionActivity : AppCompatActivity() {
 
 
         override fun onPreExecute() {
-            mProgressDialog.show()
+            // mProgressDialog.show()
             addLog("Respuesta:  Detectando imagen " + mImageUri!!)
         }
 
         override fun onProgressUpdate(vararg progress: String?) {
-            mProgressDialog.setMessage(progress[0])
+            //  mProgressDialog.setMessage(progress[0])
             setInfo(progress[0])
         }
 
@@ -98,9 +94,34 @@ class DetectionActivity : AppCompatActivity() {
                     "Respuesta: Deteccion Exitosa " + (result?.size
                         ?: 0) + "rostro(s) en " + mImageUri
                 )
-            }
+                val hair = result?.get(0)?.faceAttributes?.hair?.let { getHair(it) }
+                val facialhair = result?.get(0)?.faceAttributes?.facialHair?.let {
+                    getFacialHair(it)
+                }
+                val makeup = result?.get(0)?.faceAttributes?.makeup?.let { getMakeup(it) }
 
-            setUiAfterDetection(result, mSucceed)
+
+                val face_description = String.format(
+                    "Age: %s  Gender: %s\nHair: %s  FacialHair: %s\nMakeup: %s  %s\nForeheadOccluded: %s  Blur: %s\nEyeOccluded: %s  %s\n" + "MouthOccluded: %s  Noise: %s\nGlassesType: %s\nHeadPose: %s\nAccessories: %s",
+                    result?.get(0)?.faceAttributes?.age.toString(),
+                    result?.get(0)?.faceAttributes?.gender.toString(),
+                    hair.toString(),
+                    facialhair,
+                    makeup,
+                    result?.get(0)?.faceAttributes?.emotion?.let { getEmotion(it) },
+                    result?.get(0)?.faceAttributes?.occlusion?.foreheadOccluded,
+                    result?.get(0)?.faceAttributes?.blur?.blurLevel,
+                    result?.get(0)?.faceAttributes?.occlusion?.eyeOccluded,
+                    result?.get(0)?.faceAttributes?.exposure?.exposureLevel,
+                    result?.get(0)?.faceAttributes?.occlusion?.mouthOccluded,
+                    result?.get(0)?.faceAttributes?.noise?.noiseLevel,
+                    result?.get(0)?.faceAttributes?.glasses,
+                    result?.get(0)?.faceAttributes?.headPose?.let { getHeadPose(it) },
+                    result?.get(0)?.faceAttributes?.accessories?.let { getAccesories(it) }
+                )
+                txt_info.text = face_description
+
+            }
         }
     }
 
@@ -155,51 +176,11 @@ class DetectionActivity : AppCompatActivity() {
                                     + "x" + mBitmap?.height
                         )
                     }
-
-                    val faceListAdapter = FaceListAdapter(null)
-                    list_detected_faces.adapter = faceListAdapter
-                    setInfo("")
                     setDetectButtonEnableStatus(true)
                 }
             else -> {
             }
         }
-    }
-
-
-    private fun setUiAfterDetection(result: Array<Face>?, succeed: Boolean) {
-
-        mProgressDialog.dismiss()
-
-        setAllButtonsEnabledStatus(true)
-        setDetectButtonEnableStatus(false)
-
-        if (succeed) {
-
-            val detectionResult: String
-
-            if (result != null) {
-
-                detectionResult = (result.size.toString() + " face"
-                        + (if (result.size != 1) "s" else "") + " detected")
-
-                image.setImageBitmap(
-                    ImageHelper.drawFaceRectanglesOnBitmap(
-                        mBitmap!!, result, true
-                    )
-                )
-
-                val faceListAdapter = FaceListAdapter(result)
-                list_detected_faces.adapter = faceListAdapter
-            } else {
-                detectionResult = "0 face detect"
-            }
-
-            setInfo(detectionResult)
-        }
-
-        mImageUri = null
-        mBitmap = null
     }
 
     private fun setDetectButtonEnableStatus(isEnabled: Boolean) {
@@ -222,211 +203,6 @@ class DetectionActivity : AppCompatActivity() {
         LogHelper.addDetectionLog(log)
     }
 
-    private inner class FaceListAdapter
-    constructor(detectionResult: Array<Face>?) : BaseAdapter() {
-
-        var faces: List<Face>
-        var faceThumbnails: MutableList<Bitmap>
-
-        init {
-            faces = ArrayList()
-            faceThumbnails = ArrayList()
-
-            if (detectionResult != null) {
-
-                faces = Arrays.asList(*detectionResult)
-
-                for (face in faces) {
-                    try {
-                        faceThumbnails.add(
-                            ImageHelper.generateFaceThumbnail(
-                                mBitmap, face.faceRectangle
-                            )
-                        )
-
-                    } catch (e: IOException) {
-                        setInfo(e.message)
-                    }
-                }
-
-            }
-
-        }
-
-        override fun isEnabled(position: Int): Boolean {
-            return false
-        }
-
-
-        override fun getCount(): Int {
-            return faces.size
-        }
-
-        override fun getItem(position: Int): Any {
-            return faces[position]
-        }
-
-        override fun getItemId(position: Int): Long {
-
-            return position.toLong()
-        }
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-
-            var convertView = convertView
-
-            if (convertView == null) {
-
-                val layoutInflater =
-                    getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                convertView =
-                    layoutInflater.inflate(R.layout.descripcion_imagedetect_layout, parent, false)
-            }
-
-            convertView!!.id = position
-
-
-            (convertView.findViewById(R.id.face_thumbnail) as ImageView).setImageBitmap(
-                faceThumbnails[position]
-            )
-
-            //  Uri.fromFile() will not work on Android 7.0+, with a targetSdkVersion of 24 or higher. Use FileProvider
-            //Uri outputUri=FileProvider.getUriForFile(this, AUTHORITY, output);
-
-            val formatter: DecimalFormat = DecimalFormat("#0.0")
-
-            val face_description: String = String.format(
-                "Edad: %s  Genero: %s\nCabello: %s  Bigote: %s\nMaquillaje: %s  %s\nForeheadOccluded: %s  Blur: %s\nEyeOccluded: %s  %s\n" + "MouthOccluded: %s  Noise: %s\nTipo de lentes: %s\nHeadPose: %s\nAccessorios: %s",
-                faces[position].faceAttributes.age,
-                faces[position].faceAttributes.gender,
-                getHair(faces[position].faceAttributes.hair),
-                getFacialHair(faces[position].faceAttributes.facialHair),
-                getMakeup(faces[position].faceAttributes.makeup),
-                getEmotion(faces[position].faceAttributes.emotion),
-                faces[position].faceAttributes.occlusion.foreheadOccluded,
-                faces[position].faceAttributes.blur.blurLevel,
-                faces[position].faceAttributes.occlusion.eyeOccluded,
-                faces[position].faceAttributes.exposure.exposureLevel,
-                faces[position].faceAttributes.occlusion.mouthOccluded,
-                faces[position].faceAttributes.noise.noiseLevel,
-                faces[position].faceAttributes.glasses,
-                getHeadPose(faces[position].faceAttributes.headPose),
-                getAccesories(faces[position].faceAttributes.accessories)
-            )
-
-            (convertView.findViewById(R.id.text_detected_face) as TextView).setText(face_description)
-
-
-            return convertView
-        }
-
-        fun getHair(hair: Hair): String {
-            if (hair.hairColor.size == 0) {
-                return if (hair.invisible)
-                    "Invisible" else
-                    "Bald"
-            } else {
-
-                var maxConfidenceIndex = 0
-                var maxConfidence = 0.0
-
-                for (i in hair.hairColor.indices) {
-
-                    if (hair.hairColor[i].confidence > maxConfidence) {
-                        maxConfidence = hair.hairColor[i].confidence
-                        maxConfidenceIndex = i
-                    }
-                }
-
-                return hair.hairColor[maxConfidenceIndex].color.toString()
-            }
-        }
-
-        fun getMakeup(makeup: Makeup): String {
-            return if (makeup.eyeMakeup || makeup.lipMakeup) "Yes" else "No"
-        }
-
-        fun getAccesories(accesories: Array<Accessory>): String {
-
-            if (accesories.size == 0) {
-                return "NoAccesories"
-            } else {
-                val accesoriesList = arrayOfNulls<String>(accesories.size)
-
-                for (i in accesories.indices) {
-
-                    accesoriesList[i] = accesories[i].type.toString()
-                }
-
-                return TextUtils.join(",", accesoriesList)
-            }
-
-        }
-
-        fun getFacialHair(facialHair: FacialHair): String {
-
-            return if (facialHair.moustache + facialHair.beard + facialHair.sideburns > 0) "Yes" else "No"
-        }
-
-        fun getEmotion(emotion: Emotion): String {
-            var emotionType = ""
-            var emotionValue = 0.0
-
-            if (emotion.anger > emotionValue) {
-                emotionValue = emotion.anger
-                emotionType = "Anger"
-            }
-
-            if (emotion.contempt > emotionValue) {
-                emotionValue = emotion.anger
-                emotionType = "Contempt"
-            }
-
-            if (emotion.disgust > emotionValue) {
-                emotionValue = emotion.disgust
-                emotionType = "Disgust"
-            }
-
-            if (emotion.fear > emotionValue) {
-                emotionValue = emotion.fear
-                emotionType = "Fear"
-            }
-
-            if (emotion.happiness > emotionValue) {
-                emotionValue = emotion.happiness
-                emotionType = "Happiness"
-            }
-            if (emotion.neutral > emotionValue) {
-                emotionValue = emotion.neutral
-                emotionType = "Neutral"
-            }
-
-            if (emotion.sadness > emotionValue) {
-                emotionValue = emotion.sadness
-                emotionType = "Sadness"
-            }
-
-            if (emotion.surprise > emotionValue) {
-                emotionValue = emotion.surprise
-                emotionType = "Surprise"
-            }
-
-            return String.format("%s:  %f", emotionType, emotionValue)
-
-        }
-
-        fun getHeadPose(headPose: HeadPose): String {
-            return String.format(
-                "Pitch: %s, Roll: %s, Yaw: %s",
-                headPose.pitch,
-                headPose.roll,
-                headPose.yaw
-            )
-
-        }
-
-
-    }
 
     val clickListener: View.OnClickListener = View.OnClickListener { view ->
 
@@ -452,8 +228,110 @@ class DetectionActivity : AppCompatActivity() {
         }
     }
 
-    companion object {
-        val REQUEST_SELECT_IMAGE = 0
+
+    fun getHair(hair: Hair): String {
+        if (hair.hairColor.size == 0) {
+            return if (hair.invisible)
+                "Invisible" else
+                "Bald"
+        } else {
+
+            var maxConfidenceIndex = 0
+            var maxConfidence = 0.0
+
+            for (i in hair.hairColor.indices) {
+
+                if (hair.hairColor[i].confidence > maxConfidence) {
+                    maxConfidence = hair.hairColor[i].confidence
+                    maxConfidenceIndex = i
+                }
+            }
+
+            return hair.hairColor[maxConfidenceIndex].color.toString()
+        }
+    }
+
+    fun getMakeup(makeup: Makeup): String {
+        return if (makeup.eyeMakeup || makeup.lipMakeup) "Yes" else "No"
+    }
+
+    fun getAccesories(accesories: Array<Accessory>): String {
+
+        if (accesories.size == 0) {
+            return "NoAccesories"
+        } else {
+            val accesoriesList = arrayOfNulls<String>(accesories.size)
+
+            for (i in accesories.indices) {
+
+                accesoriesList[i] = accesories[i].type.toString()
+            }
+
+            return TextUtils.join(",", accesoriesList)
+        }
+
+    }
+
+    fun getFacialHair(facialHair: FacialHair): String {
+
+        return if (facialHair.moustache + facialHair.beard + facialHair.sideburns > 0) "Yes" else "No"
+    }
+
+    fun getEmotion(emotion: Emotion): String {
+        var emotionType = ""
+        var emotionValue = 0.0
+
+        if (emotion.anger > emotionValue) {
+            emotionValue = emotion.anger
+            emotionType = "Anger"
+        }
+
+        if (emotion.contempt > emotionValue) {
+            emotionValue = emotion.anger
+            emotionType = "Contempt"
+        }
+
+        if (emotion.disgust > emotionValue) {
+            emotionValue = emotion.disgust
+            emotionType = "Disgust"
+        }
+
+        if (emotion.fear > emotionValue) {
+            emotionValue = emotion.fear
+            emotionType = "Fear"
+        }
+
+        if (emotion.happiness > emotionValue) {
+            emotionValue = emotion.happiness
+            emotionType = "Happiness"
+        }
+        if (emotion.neutral > emotionValue) {
+            emotionValue = emotion.neutral
+            emotionType = "Neutral"
+        }
+
+        if (emotion.sadness > emotionValue) {
+            emotionValue = emotion.sadness
+            emotionType = "Sadness"
+        }
+
+        if (emotion.surprise > emotionValue) {
+            emotionValue = emotion.surprise
+            emotionType = "Surprise"
+        }
+
+        return String.format("%s:  %f", emotionType, emotionValue)
+
+    }
+
+    fun getHeadPose(headPose: HeadPose): String {
+        return String.format(
+            "Pitch: %s, Roll: %s, Yaw: %s",
+            headPose.pitch,
+            headPose.roll,
+            headPose.yaw
+        )
+
     }
 
 

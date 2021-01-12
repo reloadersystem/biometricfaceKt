@@ -6,6 +6,7 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.reloader.biometricface.ui.DetectionActivity
+import com.reloader.biometricface.ui.GroupingActivity
 import com.reloader.biometricface.ui.VerificationMenuActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -49,6 +50,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             R.id.btn_agrupando -> {
+
+                val intent = Intent(this, GroupingActivity::class.java)
+                startActivity(intent)
 
             }
 

@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".ui.PersonVerificationActivity"></activity>
+        <activity android:name=".ui.GroupingActivity"></activity>
+        <activity android:name=".ui.PersonVerificationActivity" />
         <activity android:name=".ui.FaceVerificationActivity" />
         <activity android:name=".ui.VerificationMenuActivity" />
         <activity
