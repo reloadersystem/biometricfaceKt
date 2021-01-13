@@ -77,12 +77,12 @@ class DetectionActivity : AppCompatActivity() {
 
 
         override fun onPreExecute() {
-            // mProgressDialog.show()
+            mProgressDialog.show()
             addLog("Respuesta:  Detectando imagen " + mImageUri!!)
         }
 
         override fun onProgressUpdate(vararg progress: String?) {
-            //  mProgressDialog.setMessage(progress[0])
+            mProgressDialog.setMessage(progress[0])
             setInfo(progress[0])
         }
 
@@ -90,6 +90,7 @@ class DetectionActivity : AppCompatActivity() {
 
             if (mSucceed) {
 
+                mProgressDialog.hide()
                 addLog(
                     "Respuesta: Deteccion Exitosa " + (result?.size
                         ?: 0) + "rostro(s) en " + mImageUri
@@ -120,6 +121,7 @@ class DetectionActivity : AppCompatActivity() {
                     result?.get(0)?.faceAttributes?.accessories?.let { getAccesories(it) }
                 )
                 txt_info.text = face_description
+                setAllButtonsEnabledStatus(true)
 
             }
         }

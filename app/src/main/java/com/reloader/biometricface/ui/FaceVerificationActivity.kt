@@ -1,15 +1,14 @@
 package com.reloader.biometricface.ui
 
 import android.app.ProgressDialog
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.AsyncTask
 import android.os.Bundle
-import android.view.LayoutInflater
+import android.util.Log
 import android.view.View
-import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.microsoft.projectoxford.face.contract.Face
 import com.microsoft.projectoxford.face.contract.VerifyResult
@@ -21,7 +20,6 @@ import com.reloader.biometricface.log.VerificationLogActivity
 import kotlinx.android.synthetic.main.activity_face_verification.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-import java.io.IOException
 import java.io.InputStream
 import java.text.DecimalFormat
 import java.util.*
@@ -33,12 +31,14 @@ class FaceVerificationActivity : AppCompatActivity() {
     private var mFaceId0: UUID? = null
     private var mFaceId1: UUID? = null
 
-    private lateinit var mFaceListAdapter0: FaceListAdapter
-    private lateinit var mFaceListAdapter1: FaceListAdapter
 
     private var mBitmap0: Bitmap? = null
     private var mBitmap1: Bitmap? = null
 
+    private var bitmap: Bitmap? = null
+
+
+    //todo servicio  que compara fotos
     private inner class VerificationTask constructor(
         private val mFaceId0: UUID,
         private val mFaceId1: UUID
@@ -75,15 +75,31 @@ class FaceVerificationActivity : AppCompatActivity() {
         override fun onPostExecute(result: VerifyResult?) {
 
             if (result != null) {
-                addLog(
-                    "Response: Success. Face $mFaceId0 and face $mFaceId1 + " + (if (result.isIdentical) " " else " don't ")
-                            + "belong to the same person"
-                )
+//                addLog(
+//                    "Response: Success. Face $mFaceId0 and face $mFaceId1 + " + (if (result.isIdentical) " " else " don't ")
+//                            + "belong to the same person"
+//                )
+
+                mProgressDialog.dismiss()
+
+                val formatter = DecimalFormat("#0.00")
+
+                val verificationResult =
+                    ((if (result.isIdentical) "La misma persona" else "Personas diferentes")
+                            + ". La Similitud es " + formatter.format(result.confidence)
+                            )
+
+                Log.v("Resultado", verificationResult)
+
+                info.text = verificationResult
+
+                setAllButtonEnabledStatus(true)
             }
-            setUiAfterVerification(result)
+            // setUiAfterVerification(result)
         }
     }
 
+    //todo Verifica si es una foto  Usuario 1 / 2
     private inner class DetectionTask internal constructor(
         private val mIndex: Int
     ) : AsyncTask<InputStream, String, Array<Face>>() {
@@ -121,6 +137,7 @@ class FaceVerificationActivity : AppCompatActivity() {
         }
 
         override fun onPostExecute(result: Array<Face>) {
+            mProgressDialog.hide()
             setUiAfterDetection(result, mIndex, mSucceed)
         }
     }
@@ -130,8 +147,8 @@ class FaceVerificationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_face_verification)
 
-        initializeFaceList(0)
-        initializeFaceList(1)
+//        initializeFaceList(0)
+//        initializeFaceList(1)
 
         mProgressDialog = ProgressDialog(this)
         mProgressDialog.setTitle("Espere por favor")
@@ -161,7 +178,7 @@ class FaceVerificationActivity : AppCompatActivity() {
 
         if (resultCode == RESULT_OK) {
 
-            val bitmap = ImageHelper.loadSizeLimitedBitmapFromUri(
+            bitmap = ImageHelper.loadSizeLimitedBitmapFromUri(
                 data?.data, contentResolver
             )
 
@@ -178,19 +195,14 @@ class FaceVerificationActivity : AppCompatActivity() {
                     mFaceId1 = null
                 }
 
-                addLog("Image" + index + ": " + data?.data + "resize to " + bitmap.width + "x" + bitmap.height)
+                addLog("Image" + index + ": " + data?.data + "resize to " + bitmap!!.width + "x" + bitmap!!.height)
 
-                detect(bitmap, index)
+                detect(bitmap!!, index)
             }
         }
     }
 
     private fun clearDetectFaces(index: Int) {
-        val faceList = findViewById(
-            if (index == 0) R.id.list_faces_0 else R.id.list_faces_1
-        ) as ListView
-
-        faceList.visibility = View.GONE
 
         val imageView = findViewById(if (index == 0) R.id.image_0 else R.id.image_1) as ImageView
         imageView.setImageResource(android.R.color.transparent)
@@ -227,53 +239,8 @@ class FaceVerificationActivity : AppCompatActivity() {
 
     }
 
-    private fun initializeFaceList(index: Int) {
-
-        val listview =
-            findViewById<ListView>(if (index == 0) R.id.list_faces_0 else R.id.list_faces_1)
-
-        listview.onItemClickListener =
-            AdapterView.OnItemClickListener { parent, view, position, id ->
-
-                val faceListAdapter = if (index == 0) mFaceListAdapter0 else mFaceListAdapter1
-
-                if (faceListAdapter.faces[position].faceId != (if (index == 0) mFaceId0 else mFaceId1)) {
-
-                    if (index == 0) {
-                        mFaceId0 = faceListAdapter.faces[position].faceId
-                    } else {
-                        mFaceId1 = faceListAdapter.faces[position].faceId
-                    }
-
-                    val imageView =
-                        if (index == 0) image_0 else image_1
-                    imageView.setImageBitmap(faceListAdapter.faceThumbnails[position])
-                    setInfo("")
-                }
-            }
-    }
-
-    private fun setUiAfterVerification(result: VerifyResult?) {
-
-        mProgressDialog.dismiss()
-
-        setAllButtonEnabledStatus(true)
-
-        if (result != null) {
-
-            val formatter = DecimalFormat("#0.00")
-
-            val verificationResult =
-                ((if (result.isIdentical) "La misma persona" else "Personas diferentes")
-                        + ". La Similitud es " + formatter.format(result.confidence)
-                        )
-
-            setInfo(verificationResult)
-        }
-    }
-
-
     private fun setUiAfterDetection(result: Array<Face>?, index: Int, succeed: Boolean) {
+
 
         setSelectImageButtonEnabledStatus(true, index)
 
@@ -286,33 +253,12 @@ class FaceVerificationActivity : AppCompatActivity() {
 
             setInfo(result.size.toString() + " face" + (if (result.size != 1) "s" else "") + " detected")
 
-            val faceListAdapter = FaceListAdapter(result, index)
-
-            if (faceListAdapter.faces.size != 0) {
-
-                if (index == 0) {
-                    mFaceId0 = faceListAdapter.faces.get(0).faceId
-                } else {
-                    mFaceId1 = faceListAdapter.faces.get(0).faceId
-                }
-// photo take resultado  ||
-                val imageView =
-                    findViewById(if (index == 0) R.id.image_0 else R.id.image_1) as ImageView
-                imageView.setImageBitmap(faceListAdapter.faceThumbnails[0])
-            }
-
-            val listView = findViewById(
-                if (index == 0) R.id.list_faces_0 else R.id.list_faces_1
-            ) as ListView
-            listView.adapter = faceListAdapter
-            listView.setVisibility(View.VISIBLE)
-
             if (index == 0) {
-                mFaceListAdapter0 = faceListAdapter
-                mBitmap0 = null
+                mFaceId0 = result[0].faceId
+                image_0.setImageBitmap(bitmap)
             } else {
-                mFaceListAdapter1 = faceListAdapter
-                mBitmap1 = null
+                mFaceId1 = result[0].faceId
+                image_1.setImageBitmap(bitmap)
             }
         }
 
@@ -342,7 +288,7 @@ class FaceVerificationActivity : AppCompatActivity() {
 
         setSelectImageButtonEnabledStatus(false, index)
 
-        setInfo("Detectando...")
+        setInfo("Detectando... ")
 
     }
 
@@ -352,79 +298,6 @@ class FaceVerificationActivity : AppCompatActivity() {
 
     private fun addLog(log: String?) {
         LogHelper.addVerificationLog(log)
-    }
-
-    private inner class FaceListAdapter
-    constructor(detectionResult: Array<Face>?, var mIndex: Int) : BaseAdapter() {
-
-        var faces: List<Face>
-        var faceThumbnails: MutableList<Bitmap>
-
-        init {
-            faces = ArrayList()
-            faceThumbnails = ArrayList()
-
-            if (detectionResult != null) {
-
-                faces = Arrays.asList(*detectionResult)
-
-                for (face in faces) {
-                    try {
-                        faceThumbnails.add(
-                            ImageHelper.generateFaceThumbnail(
-                                if (mIndex == 0) mBitmap0 else mBitmap1, face.faceRectangle
-                            )
-                        )
-                    } catch (e: IOException) {
-                        setInfo(e.message)
-                    }
-                }
-
-            }
-
-        }
-
-
-        override fun getCount(): Int {
-            return faces.size
-        }
-
-        override fun getItem(position: Int): Any {
-            return faces[position]
-        }
-
-        override fun getItemId(position: Int): Long {
-            return position.toLong()
-        }
-
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-
-            var convertView = convertView
-
-            if (convertView == null) {
-
-                val layoutInflater =
-                    getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                convertView =
-                    layoutInflater.inflate(R.layout.item_face, parent, false)
-            }
-
-            convertView!!.id = position
-
-
-            var thumbnailToShow = faceThumbnails[position]
-
-            if (mIndex == 0 && faces[position].faceId == mFaceId0) {
-                thumbnailToShow = ImageHelper.highlightSelectedFaceThumbnail(thumbnailToShow)
-            } else if (mIndex == 1 && faces[position].faceId == mFaceId1) {
-                thumbnailToShow = ImageHelper.highlightSelectedFaceThumbnail(thumbnailToShow)
-            }
-
-            // convertView.image_face.setImageBitmap(thumbnailToShow)
-
-            return convertView
-        }
-
     }
 
     companion object {
@@ -439,7 +312,7 @@ class FaceVerificationActivity : AppCompatActivity() {
 
             R.id.verify -> {
                 setAllButtonEnabledStatus(false)
-                mFaceId0?.let { mFaceId1?.let { it1 -> VerificationTask(it, it1).execute() } }
+                VerificationTask(this!!.mFaceId0!!, this!!.mFaceId1!!).execute()
             }
 
             R.id.select_image_0 -> {

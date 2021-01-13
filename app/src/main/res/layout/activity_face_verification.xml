@@ -44,18 +44,10 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentLeft="true"
                     android:layout_centerVertical="true"
-                    android:text="@string/select_image" />
+                    android:textAllCaps="false"
+                    android:text="Tomar Foto" />
 
             </RelativeLayout>
-
-            <ListView
-                android:id="@+id/list_faces_0"
-                android:layout_width="64dp"
-                android:layout_height="match_parent"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:background="#E0E0E0"
-                android:verticalSpacing="@dimen/view_margin" />
 
             <ImageView
                 android:id="@+id/image_0"
@@ -63,8 +55,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginEnd="@dimen/view_margin"
                 android:layout_marginRight="@dimen/view_margin"
-                android:layout_toStartOf="@id/list_faces_0"
-                android:layout_toLeftOf="@id/list_faces_0"
+
                 android:layout_toEndOf="@id/image_control_0"
                 android:layout_toRightOf="@id/image_control_0"
                 android:background="#E0E0E0"
@@ -73,6 +64,7 @@
         </RelativeLayout>
 
         <RelativeLayout
+            android:layout_marginTop="10dp"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_marginBottom="@dimen/view_margin"
@@ -101,18 +93,10 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentLeft="true"
                     android:layout_centerVertical="true"
-                    android:text="@string/select_image" />
+                    android:textAllCaps="false"
+                    android:text="Tomar Foto" />
 
             </RelativeLayout>
-
-            <ListView
-                android:id="@+id/list_faces_1"
-                android:layout_width="64dp"
-                android:layout_height="match_parent"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:background="#E0E0E0"
-                android:verticalSpacing="@dimen/view_margin" />
 
             <ImageView
                 android:id="@+id/image_1"
@@ -120,8 +104,7 @@
                 android:layout_height="match_parent"
                 android:layout_marginEnd="@dimen/view_margin"
                 android:layout_marginRight="@dimen/view_margin"
-                android:layout_toStartOf="@id/list_faces_1"
-                android:layout_toLeftOf="@id/list_faces_1"
+
                 android:layout_toEndOf="@id/image_control_1"
                 android:layout_toRightOf="@id/image_control_1"
                 android:background="#E0E0E0"
