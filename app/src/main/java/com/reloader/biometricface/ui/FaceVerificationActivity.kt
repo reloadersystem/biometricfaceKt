@@ -1,28 +1,44 @@
 package com.reloader.biometricface.ui
 
 import android.app.ProgressDialog
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.microsoft.projectoxford.face.contract.Face
 import com.microsoft.projectoxford.face.contract.VerifyResult
 import com.reloader.biometricface.R
+import com.reloader.biometricface.domain.HelperWs
+import com.reloader.biometricface.domain.MethodWs
 import com.reloader.biometricface.helper.ImageHelper
 import com.reloader.biometricface.helper.LogHelper
 import com.reloader.biometricface.helper.SampleApp
+import com.reloader.biometricface.helper.ShareDataRead
+import com.reloader.biometricface.helper.ShareDataRead.guardarValor
 import com.reloader.biometricface.log.VerificationLogActivity
 import kotlinx.android.synthetic.main.activity_face_verification.*
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.InputStream
+import okhttp3.ResponseBody
+import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.*
+import java.net.HttpURLConnection
+import java.net.URL
 import java.text.DecimalFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class FaceVerificationActivity : AppCompatActivity() {
 
@@ -36,6 +52,10 @@ class FaceVerificationActivity : AppCompatActivity() {
     private var mBitmap1: Bitmap? = null
 
     private var bitmap: Bitmap? = null
+
+    private var mMyTask: AsyncTask<*, *, *>? = null
+
+    private lateinit var resValues: MutableList<URL>
 
 
     //todo servicio  que compara fotos
@@ -75,11 +95,6 @@ class FaceVerificationActivity : AppCompatActivity() {
         override fun onPostExecute(result: VerifyResult?) {
 
             if (result != null) {
-//                addLog(
-//                    "Response: Success. Face $mFaceId0 and face $mFaceId1 + " + (if (result.isIdentical) " " else " don't ")
-//                            + "belong to the same person"
-//                )
-
                 mProgressDialog.dismiss()
 
                 val formatter = DecimalFormat("#0.00")
@@ -95,7 +110,6 @@ class FaceVerificationActivity : AppCompatActivity() {
 
                 setAllButtonEnabledStatus(true)
             }
-            // setUiAfterVerification(result)
         }
     }
 
@@ -151,22 +165,27 @@ class FaceVerificationActivity : AppCompatActivity() {
 //        initializeFaceList(1)
 
         mProgressDialog = ProgressDialog(this)
-        mProgressDialog.setTitle("Espere por favor")
+        mProgressDialog.setTitle("Obteniendo fotos del servidor...")
 
         verify.setOnClickListener(clickListener)
         select_image_0.setOnClickListener(clickListener)
         select_image_1.setOnClickListener(clickListener)
         view_log.setOnClickListener(clickListener)
 
+        obtenerImagenes()
 
         clearDetectFaces(0)
         clearDetectFaces(1)
 
         setVerifyButtonEnabledStatus(false)
         LogHelper.clearVerificationLog()
+
+
     }
 
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         val index: Int
         if (requestCode == REQUEST_SELECT_IMAGE_0) {
             index = 0
@@ -181,7 +200,6 @@ class FaceVerificationActivity : AppCompatActivity() {
             bitmap = ImageHelper.loadSizeLimitedBitmapFromUri(
                 data?.data, contentResolver
             )
-
             if (bitmap != null) {
                 setVerifyButtonEnabledStatus(false)
                 clearDetectFaces(index)
@@ -201,6 +219,7 @@ class FaceVerificationActivity : AppCompatActivity() {
             }
         }
     }
+
 
     private fun clearDetectFaces(index: Int) {
 
@@ -240,7 +259,6 @@ class FaceVerificationActivity : AppCompatActivity() {
     }
 
     private fun setUiAfterDetection(result: Array<Face>?, index: Int, succeed: Boolean) {
-
 
         setSelectImageButtonEnabledStatus(true, index)
 
@@ -338,4 +356,173 @@ class FaceVerificationActivity : AppCompatActivity() {
             if (index == 0) REQUEST_SELECT_IMAGE_0 else REQUEST_SELECT_IMAGE_1
         )
     }
+
+    private fun obtenerImagenes() {
+
+        resValues = ArrayList()
+
+        val methodWs = HelperWs.getConfiguration(applicationContext).create(MethodWs::class.java)
+        val responseBodyCall = methodWs.getRecursos()
+        responseBodyCall.enqueue(object : Callback<ResponseBody> {
+            override fun onResponse(
+                call: Call<ResponseBody>,
+                response: Response<ResponseBody>
+            ) {
+                if (response.isSuccessful) {
+                    val informacion = response.body()
+                    try {
+                        val respuesta = informacion!!.string()
+                        val resObject = JSONObject(respuesta)
+                        val version = resObject.getInt("version_resources")
+                        val fechamodif = resObject.getString("fechamodif")
+                        val resArray = resObject.getJSONArray("listarecursos")
+
+                        val sharpref = applicationContext?.getSharedPreferences(
+                            "biometricpref",
+                            Context.MODE_PRIVATE
+                        )!!
+
+                        if (sharpref.contains("version_resources")) {
+                            val data =
+                                ShareDataRead.obtenerValor(applicationContext, "version_resources")
+                            Log.v("valorBiom", data)
+                            val numversion = Integer.parseInt(data)
+
+                            if (version > numversion) {
+
+                                guardarValor(
+                                    applicationContext,
+                                    "version_resources",
+                                    version.toString()
+                                )
+                                for (idx in 0 until resArray.length()) {
+                                    resValues.add(URL(resArray.getJSONObject(idx).getString("url")))
+                                }
+                                iniciarDescarga(resValues as ArrayList<URL>)
+                            }
+                        } else {
+                            guardarValor(
+                                applicationContext,
+                                "version_resources",
+                                version.toString()
+                            )
+
+                            for (idx in 0 until resArray.length()) {
+                                resValues.add(URL(resArray.getJSONObject(idx).getString("url")))
+                            }
+
+                            iniciarDescarga(resValues as ArrayList<URL>)
+
+                            Log.v("photosrc", resArray.toString())
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
+                Log.e("infoResponseFalse", t.message)
+            }
+        })
+    }
+
+    private fun iniciarDescarga(urlList: ArrayList<URL>) {
+
+        mMyTask = DownloadTask().execute(urlList)
+
+    }
+
+    private inner class DownloadTask : AsyncTask<List<URL>, Int, List<Bitmap>>() {
+
+        override fun onPreExecute() {
+            mProgressDialog.show()
+            mProgressDialog.setProgress(0)
+        }
+
+
+        override fun doInBackground(vararg urls: List<URL>): List<Bitmap> {
+            val count = urls[0].size
+            var connection: HttpURLConnection? = null
+            val bitmaps = ArrayList<Bitmap>()
+
+            for (i in 0 until count) {
+
+                val currentURL = urls[0][i]
+
+                try {
+                    connection = currentURL.openConnection() as HttpURLConnection
+                    connection.connect()
+                    val inputStream = connection.inputStream
+                    val bufferInputStream = BufferedInputStream(inputStream)
+                    val bmp = BitmapFactory.decodeStream(bufferInputStream)
+                    bitmaps.add(bmp)
+
+                    publishProgress(((i + 1) / count.toFloat() * 100).toInt())
+
+                    if (isCancelled()) {
+                        break
+                    }
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                } finally {
+                    connection!!.disconnect()
+                }
+            }
+            return bitmaps
+        }
+
+        override fun onProgressUpdate(vararg progress: Int?) {
+            super.onProgressUpdate(*progress)
+            mProgressDialog.progress = progress[0]!!
+        }
+
+        override fun onPostExecute(result: List<Bitmap>?) {
+            super.onPostExecute(result)
+            mProgressDialog.dismiss()
+
+            for (i in result!!.indices) {
+                val bitmap = result[i]
+                val archivo = resValues[i].toString()
+                val parts =
+                    archivo.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                val part5 = parts[6] // 123
+
+                val imageInternalUri = saveImageToInternalStorage(bitmap, i, part5)
+
+            }
+            handlerMessage(applicationContext, "Completado gracias, proceda marcar...")
+        }
+
+    }
+
+    private fun saveImageToInternalStorage(bitmap: Bitmap, index: Int, nombre: String): Uri {
+
+        val wrapper = ContextWrapper(applicationContext)
+        var file = wrapper.getDir("Images", Context.MODE_PRIVATE)
+        file = File(file, nombre)
+        try {
+            var stream: OutputStream? = null
+            stream = FileOutputStream(file)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            stream.flush()
+            stream.close()
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        val saveImageUri = Uri.parse(file.absolutePath)
+        return saveImageUri
+    }
+
+    private fun handlerMessage(context: Context, mensaje: String) {
+
+        val handler = Handler(context.mainLooper)
+        handler.post {
+            Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+
+        }
+    }
+
 }
