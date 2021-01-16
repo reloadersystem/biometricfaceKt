@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.microsoft.projectoxford.face.FaceServiceClient
 import com.microsoft.projectoxford.face.contract.*
 import com.reloader.biometricface.R
@@ -17,6 +18,8 @@ import com.reloader.biometricface.helper.ImageHelper
 import com.reloader.biometricface.helper.LogHelper
 import com.reloader.biometricface.helper.SampleApp
 import kotlinx.android.synthetic.main.activity_detection.*
+import kotlinx.android.synthetic.main.activity_detection.view_log
+import kotlinx.android.synthetic.main.activity_face_verification.*
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
@@ -140,6 +143,14 @@ class DetectionActivity : AppCompatActivity() {
 
         select_image.setOnClickListener(clickListener)
         detect.setOnClickListener(clickListener)
+
+        Glide.with(applicationContext)
+            .load("/data/user/0/com.reloader.biometricface/app_Images/img_01.jpg") //path to picture
+            //.placeholder(R.drawable.no_image)
+            // .crossFade()
+            // .placeholder(R.drawable.no_image)
+            //.crossFade()
+            .into(image_0)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
