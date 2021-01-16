@@ -16,6 +16,8 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toBitmap
+import com.bumptech.glide.Glide
 import com.microsoft.projectoxford.face.contract.Face
 import com.microsoft.projectoxford.face.contract.VerifyResult
 import com.reloader.biometricface.R
@@ -165,7 +167,7 @@ class FaceVerificationActivity : AppCompatActivity() {
 //        initializeFaceList(1)
 
         mProgressDialog = ProgressDialog(this)
-        mProgressDialog.setTitle("Obteniendo fotos del servidor...")
+        mProgressDialog.setTitle("Analizando...")
 
         verify.setOnClickListener(clickListener)
         select_image_0.setOnClickListener(clickListener)
@@ -273,7 +275,7 @@ class FaceVerificationActivity : AppCompatActivity() {
 
             if (index == 0) {
                 mFaceId0 = result[0].faceId
-                image_0.setImageBitmap(bitmap)
+                // image_0.setImageBitmap(bitmap)
             } else {
                 mFaceId1 = result[0].faceId
                 image_1.setImageBitmap(bitmap)
@@ -334,7 +336,10 @@ class FaceVerificationActivity : AppCompatActivity() {
             }
 
             R.id.select_image_0 -> {
-                selectImage(0)
+                //selectImage(0)
+
+                val image = image_0.drawable.toBitmap()
+                detect(image!!, 0)
             }
 
             R.id.select_image_1 -> {
@@ -492,6 +497,16 @@ class FaceVerificationActivity : AppCompatActivity() {
 
             }
             handlerMessage(applicationContext, "Completado gracias, proceda marcar...")
+
+            //todo  castear  foto
+
+            Glide.with(applicationContext)
+                .load("/data/user/0/com.reloader.biometricface/app_Images/img_01.jpg") //path to picture
+                //.placeholder(R.drawable.no_image)
+                // .crossFade()
+                // .placeholder(R.drawable.no_image)
+                //.crossFade()
+                .into(image_0)
         }
 
     }

@@ -1,23 +1,42 @@
 package com.reloader.biometricface
 
 import android.Manifest
+import android.app.ProgressDialog
+import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.reloader.biometricface.domain.HelperWs
+import com.reloader.biometricface.domain.MethodWs
+import com.reloader.biometricface.helper.ShareDataRead
 import com.reloader.biometricface.ui.DetectionActivity
 import com.reloader.biometricface.ui.GroupingActivity
 import com.reloader.biometricface.ui.VerificationMenuActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import okhttp3.ResponseBody
+import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.*
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
 
-    private var MY_PERMISSIONS_REQUEST_WRITE_STORAGE = 1
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,23 +53,6 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        val verificarPermisoWrite =
-            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-
-
-
-        if (verificarPermisoWrite != PackageManager.PERMISSION_GRANTED) {
-
-            if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                solicitarPermiso()
-            } else
-            {
-                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_REQUEST_WRITE_STORAGE)
-            }
-        }
-
-
-
         btn_detection.setOnClickListener(clickListener)
         btn_verificacion.setOnClickListener(clickListener)
         btn_agrupando.setOnClickListener(clickListener)
@@ -60,23 +62,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-    private fun solicitarPermiso() {
 
-        AlertDialog.Builder(this)
-            .setTitle("Autorización")
-            .setMessage("Necesito permiso para Almacenar Archivos")
-            .setPositiveButton("Aceptar") { dialogInterface, i ->
-                requestPermissions(
-                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                    MY_PERMISSIONS_REQUEST_WRITE_STORAGE
-                )
-                Log.v("permisionOk", "permiso aceptado")
-            }
-            .setNegativeButton(
-                "Cancelar"
-            ) { dialogInterface, i -> }
-            .show()
-    }
 
 
     private val clickListener: View.OnClickListener = View.OnClickListener { view ->
@@ -110,6 +96,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+
 }
 
 

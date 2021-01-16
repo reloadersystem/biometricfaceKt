@@ -19,6 +19,13 @@
         <activity android:name=".ui.PersonVerificationActivity" />
         <activity android:name=".ui.FaceVerificationActivity" />
         <activity android:name=".ui.VerificationMenuActivity" />
+        <activity android:name=".LoginActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"

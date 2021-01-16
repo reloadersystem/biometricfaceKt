@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <font>
+        android:font="@font/rajdhanibold"
+    </font>
+
+    <font>
+        android:font="@font/rajdhanilight"
+    </font>
+
+    <font>
+        android:font="@font/rajdhanimedium"
+    </font>
+
+    <font>
+        android:font="@font/rajdhaniregular"
+    </font>
+
+    <font>
+        android:font="@font/rajdhanisemiBold"
+    </font>
+
+    <font>
+        android:font="@font/futurabold"
+    </font>
+    <font>
+        android:font="@font/futuraheavy"
+    </font>
+
+    <font>
+        android:font="@font/futuralt"
+    </font>
+
+    <font>
+        android:font="@font/myriadproregular.otf"
+    </font>
+
+</font-family>
+
