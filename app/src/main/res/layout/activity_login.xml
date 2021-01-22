@@ -81,8 +81,7 @@
                         android:id="@+id/etEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="rcorrea@gmail.com"
-                        android:hint="email"></com.google.android.material.textfield.TextInputEditText>
+                        android:hint="dni"></com.google.android.material.textfield.TextInputEditText>
                 </com.google.android.material.textfield.TextInputLayout>
 
             </androidx.cardview.widget.CardView>

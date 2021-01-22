@@ -15,14 +15,12 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import com.bumptech.glide.Glide
 import com.reloader.biometricface.domain.HelperWs
 import com.reloader.biometricface.domain.MethodWs
 import com.reloader.biometricface.helper.ShareDataRead
 import com.reloader.biometricface.ui.DetectionActivity
 import com.reloader.biometricface.ui.GroupingActivity
 import com.reloader.biometricface.ui.VerificationMenuActivity
-import kotlinx.android.synthetic.main.activity_face_verification.*
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.ResponseBody
 import org.json.JSONObject
@@ -41,14 +39,20 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var mProgressDialog: ProgressDialog
 
+    lateinit var dni: String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         mProgressDialog = ProgressDialog(this)
-        mProgressDialog.setTitle("Descargandow foto del servidor...")
+        mProgressDialog.setTitle("Descargando fotos del servidor...")
 
-        obtenerImagenes()
+
+        val bundle = this.intent.extras
+        dni = bundle?.get("dniData") as String
+        obtenerImagenes(dni)
+
 
         if (getString(R.string.subscription_key).startsWith("Please")) {
 
@@ -59,7 +63,6 @@ class MainActivity : AppCompatActivity() {
                 .show()
 
         }
-
 
         btn_detection.setOnClickListener(clickListener)
         btn_verificacion.setOnClickListener(clickListener)
@@ -102,12 +105,12 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun obtenerImagenes() {
+    private fun obtenerImagenes(dni: String) {
 
         resValues = ArrayList()
 
         val methodWs = HelperWs.getConfiguration(applicationContext).create(MethodWs::class.java)
-        val responseBodyCall = methodWs.getRecursos()
+        val responseBodyCall = methodWs.getRecursos(dni)
         responseBodyCall.enqueue(object : Callback<ResponseBody> {
             override fun onResponse(
                 call: Call<ResponseBody>,
@@ -231,7 +234,7 @@ class MainActivity : AppCompatActivity() {
                 val archivo = resValues[i].toString()
                 val parts =
                     archivo.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                val part5 = parts[6] // 123
+                val part5 = parts[7] //  nombre del archivo tiene que ser diferente
 
                 val imageInternalUri = saveImageToInternalStorage(bitmap, i, part5)
 

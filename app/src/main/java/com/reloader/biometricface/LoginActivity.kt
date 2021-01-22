@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.reloader.biometricface.ui.DetectionActivity
 import kotlinx.android.synthetic.main.activity_login.*
 
 class LoginActivity : AppCompatActivity() {
@@ -27,14 +26,19 @@ class LoginActivity : AppCompatActivity() {
             if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
 
                 solicitarPermiso()
-            } else
-            {
-                requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), MY_PERMISSIONS_REQUEST_WRITE_STORAGE)
+            } else {
+                requestPermissions(
+                    arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    MY_PERMISSIONS_REQUEST_WRITE_STORAGE
+                )
             }
         }
 
         btnLogin.setOnClickListener {
+
+            val dni = etEmail.text.toString().trim()
             val intent = Intent(this, MainActivity::class.java)
+            intent.putExtra("dniData", dni)
             startActivity(intent)
             finish()
         }

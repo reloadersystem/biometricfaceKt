@@ -3,6 +3,7 @@ package com.reloader.biometricface.domain
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 /**
  * Created by Reloader on 10/7/19.
@@ -10,7 +11,7 @@ import retrofit2.http.GET
 
 
 interface MethodWs {
-    @GET("photos.json")
-    fun getRecursos(): Call<ResponseBody>
+    @GET("{dni}/photos.json")
+    fun getRecursos(@Path("dni") imagen: String): Call<ResponseBody>
 }
 

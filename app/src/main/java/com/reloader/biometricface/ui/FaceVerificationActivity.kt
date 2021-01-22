@@ -187,8 +187,6 @@ class FaceVerificationActivity : AppCompatActivity() {
 
         setVerifyButtonEnabledStatus(false)
         LogHelper.clearVerificationLog()
-
-
     }
 
 
@@ -308,7 +306,7 @@ class FaceVerificationActivity : AppCompatActivity() {
         val output = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, output)
         val inputStream = ByteArrayInputStream(output.toByteArray())
-
+        Log.v("valrInput", inputStream.toString())
         DetectionTask(index).execute(inputStream)
 
         setSelectImageButtonEnabledStatus(false, index)
