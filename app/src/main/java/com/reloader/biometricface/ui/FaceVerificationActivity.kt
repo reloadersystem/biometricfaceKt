@@ -1,15 +1,10 @@
 package com.reloader.biometricface.ui
 
 import android.app.ProgressDialog
-import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -17,30 +12,21 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.drawable.toBitmap
+import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.microsoft.projectoxford.face.contract.Face
 import com.microsoft.projectoxford.face.contract.VerifyResult
 import com.reloader.biometricface.R
-import com.reloader.biometricface.domain.HelperWs
-import com.reloader.biometricface.domain.MethodWs
-import com.reloader.biometricface.helper.ImageHelper
-import com.reloader.biometricface.helper.LogHelper
-import com.reloader.biometricface.helper.SampleApp
-import com.reloader.biometricface.helper.ShareDataRead
-import com.reloader.biometricface.helper.ShareDataRead.guardarValor
+import com.reloader.biometricface.helper.*
 import com.reloader.biometricface.log.VerificationLogActivity
+import com.reloader.biometricface.ui.Adapter.PhotosAdapterRecycler
 import kotlinx.android.synthetic.main.activity_face_verification.*
-import okhttp3.ResponseBody
-import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import java.io.*
-import java.net.HttpURLConnection
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.net.URL
 import java.text.DecimalFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 class FaceVerificationActivity : AppCompatActivity() {
 
@@ -58,6 +44,8 @@ class FaceVerificationActivity : AppCompatActivity() {
     private var mMyTask: AsyncTask<*, *, *>? = null
 
     private lateinit var resValues: MutableList<URL>
+
+    private lateinit var multipleList: List<ListUrlPhotos>
 
 
     //todo servicio  que compara fotos
@@ -166,13 +154,9 @@ class FaceVerificationActivity : AppCompatActivity() {
 //        initializeFaceList(0)
 //        initializeFaceList(1)
 
-        Glide.with(applicationContext)
-            .load("/data/user/0/com.reloader.biometricface/app_Images/img_01.jpg") //path to picture
-            //.placeholder(R.drawable.no_image)
-            // .crossFade()
-            // .placeholder(R.drawable.no_image)
-            //.crossFade()
-            .into(image_0)
+        fetchRecycler()
+
+
 
         mProgressDialog = ProgressDialog(this)
         mProgressDialog.setTitle("Analizando...")
@@ -187,6 +171,30 @@ class FaceVerificationActivity : AppCompatActivity() {
 
         setVerifyButtonEnabledStatus(false)
         LogHelper.clearVerificationLog()
+    }
+
+    private fun fetchRecycler() {
+
+        multipleList = ObjDataClass.getDataPhotos(applicationContext)
+        recycler_image.layoutManager = GridLayoutManager(applicationContext, 2)
+        recycler_image.setHasFixedSize(true)
+        val adapterRecycler = PhotosAdapterRecycler(multipleList)
+        recycler_image.adapter = adapterRecycler
+
+        adapterRecycler.setOnPhotosListener(object : OnPhotosListener {
+            override fun onSelectedImage(position: Int) {
+
+                val rutassd = multipleList[position].iconModel
+
+                Glide.with(applicationContext)
+                    .load(rutassd) //path to picture
+                    //.placeholder(R.drawable.no_image)
+                    // .crossFade()
+                    // .placeholder(R.drawable.no_image)
+                    //.crossFade()
+                    .into(image_0)
+            }
+        })
     }
 
 

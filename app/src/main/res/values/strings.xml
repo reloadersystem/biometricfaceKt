@@ -7,6 +7,8 @@
     <!--    <string name="endpoint">https://westus.api.cognitive.microsoft.com/face/v1.0</string>-->
     <string name="endpoint">https://brazilsouth.api.cognitive.microsoft.com/face/v1.0</string>
 
+    <string name="ssd_imagenes">/data/user/0/com.reloader.biometricface/app_Images/</string>
+
 
     <!-- Main activity -->
     <string name="detection">Detection</string>

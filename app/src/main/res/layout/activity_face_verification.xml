@@ -29,6 +29,7 @@
                 android:layout_marginRight="@dimen/view_margin">
 
                 <TextView
+                    android:id="@+id/txt_title1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
@@ -36,30 +37,36 @@
                     android:layout_alignParentTop="true"
                     android:text="@string/face_0" />
 
+                <ImageView
+                    android:id="@+id/image_0"
+                    android:layout_width="100dp"
+                    android:layout_height="130dp"
+                    android:layout_below="@+id/txt_title1"
+                    android:layout_marginTop="10dp"
+                    android:background="#7EFFFFFF"
+                    android:contentDescription="@string/face_0"
+                     />
+
                 <Button
                     android:id="@+id/select_image_0"
                     style="@style/ButtonStyle"
+                    android:layout_marginTop="20dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentStart="true"
-                    android:layout_alignParentLeft="true"
-                    android:layout_centerVertical="true"
+                    android:layout_below="@+id/image_0"
                     android:textAllCaps="false"
                     android:text="Identificar" />
 
             </RelativeLayout>
 
-            <ImageView
-                android:id="@+id/image_0"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="@dimen/view_margin"
-                android:layout_marginRight="@dimen/view_margin"
-
                 android:layout_toEndOf="@id/image_control_0"
-                android:layout_toRightOf="@id/image_control_0"
-                android:background="#E0E0E0"
-                android:contentDescription="@string/face_0" />
+                android:layout_toRightOf="@id/image_control_0"></androidx.recyclerview.widget.RecyclerView>
+
+
 
         </RelativeLayout>
 
